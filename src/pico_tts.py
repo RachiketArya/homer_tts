@@ -13,8 +13,6 @@ from std_msgs.msg import String, Empty
 from dynamic_reconfigure.server import Server
 # from homer_tts.cfg import MaryTTSConfig
 
-import rospy
-
 from dynamic_reconfigure.server import Server
 # from dynamic_tutorials.cfg import TutorialsConfig
 # from dynamic_tutorials.cfg import MaryTTSConfig
@@ -38,9 +36,18 @@ class MarryTTsSpeak:
     return config
 
   def retrive_wav(self, filename, text):
-    processed_text = urllib2.quote(text)
-    print(processed_text)
-    os.system("pico2wave \""+processed_text+"\" --lang=en-US --wave="+filename)
+    p_text = text.replace('>:', '')
+    p_text = p_text.replace(':O', '')
+    p_text = p_text.replace(':o', '')
+    p_text = p_text.replace(':!', '')
+    p_text = p_text.replace(':)', '')
+    p_text = p_text.replace(':(', '')
+    p_text = p_text.replace('.', '')
+    p_text = p_text.replace(':&', '')
+
+    processed_text = urllib2.quote(p_text, " ")
+    rospy.loginfo(processed_text)
+    os.system("pico2wave --wave="+filename+".wav \""+processed_text+"\" --lang=en-US")
 
 
   def play_wav_file(self, filename):
@@ -62,11 +69,13 @@ class MarryTTsSpeak:
   def speak_callback(self, data):
       if len(self.text_queue) < 10:
           self.text_queue.append(data.data)
+          # print(data.data)
       while self.text_queue[0] != data.data:
           rospy.sleep(0.5)
       self.retrive_wav("/tmp/lisa_speak", self.text_queue[0])
+      print(self.text_queue[0])
       os.system("amixer set Capture 0%")
-      self.play_wav_file("/tmp/lisa_speak")
+      self.play_wav_file("/tmp/lisa_speak.wav")
       msg = String()
       os.system("amixer set Capture 100%")
       self.text_queue.pop(0)

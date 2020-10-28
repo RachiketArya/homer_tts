@@ -22,6 +22,7 @@ void Speak::speakCallback()
 {
   m_goal = m_as_.acceptNewGoal();
   ROS_DEBUG_STREAM("[SPEAK_ACTION] Got action goal" << *m_goal);
+  // ROS_ERROR("[SPEAK_ACTION] Got action goal %s", (m_goal->text).c_str());
   if (m_goal->text == "")
   {
     ROS_INFO_STREAM("got empty speak goal - will not execute");
